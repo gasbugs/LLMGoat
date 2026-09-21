@@ -2,6 +2,12 @@
 name: Create and publish a Docker image
 
 on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Image tag to publish under ghcr.io/gasbugs
+        required: true
+        type: string
   push:
     tags:
       - "v*.*.*"
@@ -9,6 +15,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  RELEASE_TAG: ${{ inputs.image_tag || github.ref_name }}
 
 jobs:
   build-and-push-image:
@@ -38,7 +45,7 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/llmgoat-cpu:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/llmgoat-cpu:${{ env.RELEASE_TAG }}
             ghcr.io/${{ github.repository_owner }}/llmgoat-cpu:latest
 
       - name: Build and push GPU Docker image
@@ -49,5 +56,5 @@ jobs:
           file: ./Dockerfile.gpu
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/llmgoat-gpu:${{ github.ref_name }}
+            ghcr.io/${{ github.repository_owner }}/llmgoat-gpu:${{ env.RELEASE_TAG }}
             ghcr.io/${{ github.repository_owner }}/llmgoat-gpu:latest
